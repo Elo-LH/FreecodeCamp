@@ -6,6 +6,13 @@ const searchPokemon = () => {
   console.log(cleanSearchInput)
   fetchGeneralData(cleanSearchInput)
 }
+const searchSuggestion = (event) => {
+  console.log(event)
+  const searchInput = event.target.textContent
+  const cleanSearchInput = cleanInput(searchInput)
+  console.log(cleanSearchInput)
+  fetchGeneralData(cleanSearchInput)
+}
 
 const cleanInput = (searchInput) => {
   var numberRegex = /^\d+$/
@@ -106,7 +113,57 @@ const displayStats = (pokemonData) => {
   })
 }
 
+// sugestions
+
+const getSuggestions = () => {
+  const searchInput = document.getElementById("search-input").value
+  findSuggestionsInData(searchInput)
+  console.log("entered getSuggestions")
+}
+
+const findSuggestionsInData = async (input) => {
+  try {
+    const res = await fetch(url)
+    const data = await res.json()
+    findSuggestions(input, data.results)
+  } catch (err) {
+    console.log(err)
+  }
+}
+
+const findSuggestions = (input, data) => {
+  // trouver les 5 premieres occurences de l'input avec un regex
+  let result = data.filter(
+    (pokemon) =>
+      pokemon.name.toLowerCase().includes(input.toLowerCase()) ||
+      pokemon.id.toString().includes(input)
+  )
+  if (result.length > 5) {
+    result = result.slice(0, 5)
+  }
+
+  displaySuggestions(result)
+}
+
+const displaySuggestions = (suggestions) => {
+  const suggestionsDiv = document.getElementById("suggestions")
+  suggestionsDiv.innerHTML = ""
+  suggestions.forEach((suggestion) => {
+    const suggestionLink = document.createElement("button")
+    suggestionLink.textContent = suggestion.name
+    suggestionsDiv.appendChild(suggestionLink)
+    suggestionLink.addEventListener("click", (event) => {
+      searchSuggestion(event)
+    })
+    //ajouter un click event qui va affecter la suggestion sur la value de la recherche et faire la recherche ??
+  })
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   const searchBtn = document.getElementById("search-button")
   searchBtn.addEventListener("click", searchPokemon)
+  const searchInput = document.getElementById("search-input")
+  searchInput.addEventListener("input", (event) => {
+    getSuggestions(event.target.value)
+  })
 })
